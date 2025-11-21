@@ -8,7 +8,7 @@ import java.util.Set;
 import com.adrian.model.Vehiculo;
 
 public class ParqueaderoDatos {
-    
+
     private final Set<String> placas = new HashSet<>();
 
     private final Map<String, Vehiculo> mapaPlacas = new HashMap<>();
@@ -18,6 +18,11 @@ public class ParqueaderoDatos {
         mapaPlacas.put(vehiculo.getPlaca(), vehiculo);
     }
 
+    public void registrarIngreso(String placa) {
+        Vehiculo v = mapaPlacas.get(placa);
+        v.registrarIngreso();
+    }
+
     public boolean existePlaca(String placa) {
         return placas.contains(placa);
     }
@@ -25,5 +30,5 @@ public class ParqueaderoDatos {
     public Vehiculo buscar(String placa) {
         return mapaPlacas.get(placa);
     }
-
+    
 }

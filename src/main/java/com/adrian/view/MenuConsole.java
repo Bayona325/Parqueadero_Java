@@ -1,16 +1,21 @@
 package com.adrian.view;
 
+import java.time.LocalDateTime;
 import java.util.Scanner;
 
+import com.adrian.model.Carro;
+import com.adrian.repository.ParqueaderoDatos;
 import com.adrian.service.GestorIngreso;
 
 public class MenuConsole {
     Scanner scan;
     GestorIngreso gIngreso;
-    
+    ParqueaderoDatos pDatos;
+
     public MenuConsole() {
         scan = new Scanner(System.in);
         gIngreso = new GestorIngreso();
+        pDatos = new ParqueaderoDatos();
     }
 
     public void iniciar() {
@@ -18,7 +23,7 @@ public class MenuConsole {
 
         do {
             mostrarMenuPrincipal();
-            opcion = leerEntero("Seleccione una opcion del Menu anterior: ");
+            opcion = leerEntero("Seleccion una opcion del Menu anterior:");
             procesarOpcion(opcion);
         } while (opcion != 0);
     }
@@ -39,18 +44,33 @@ public class MenuConsole {
         System.out.println("\t2. Registrar Salida y Pagar");
         System.out.println("\t3. Consultar Vehiculo");
         System.out.println("\t0. Salir");
-        System.out.println("----------------------------------");
+        System.out.println("------------------------------------");
+    }
+
+    private void opcionConsultarVehiculo() {
+        
     }
 
     private void opcionIngresarVehiculo() {
         System.out.println("--- NUEVO INGRESO ---");
         String placa = leerTexto("Ingrese la Placa: ");
 
-        if (gIngreso.registrarIngreso(placa)) {
-            //Validar existencia en el sistema
-            //NO -> Registro
-        } else {
+        if(gIngreso.registrarIngreso(placa)) {
+            //Validar si existe en el sistema
+            if(pDatos.existePlaca(placa)){
+                pDatos.registrarIngreso(placa);
+                System.out.println("Vehículo registrado exitosamente.");
+            }
+            // NO -> Registro
+            else {
+                Carro carrito = new Carro(placa, "x", LocalDateTime.now());
+                pDatos.guardar(carrito);
+
+                System.out.println("Vehículo registrado exitosamente.");
+            }
             
+        } else {
+            System.out.println("Error: La placa "+ placa + " ya esta dentro del Parqueadero.");
         }
 
     }
@@ -59,18 +79,14 @@ public class MenuConsole {
 
     }
 
-    private void opcionConsultarVehiculo() {
-        
-    }
-
     // Utilidades
     private int leerEntero(String msg) {
         System.out.println(msg);
         try {
-           String valorIngreso = scan.nextLine();
-           return Integer.parseInt(valorIngreso);
-        } catch (Exception e) {
-            System.out.println("Po'favo ingrese un numero valido");
+            String valorIngresado = scan.nextLine();
+            return Integer.parseInt(valorIngresado);
+        } catch (NumberFormatException e) {
+            System.out.println("Po'favo ingrese un numero valido. ");
             System.out.println(e.getMessage());
             System.out.println(e.getLocalizedMessage());
             return -1;

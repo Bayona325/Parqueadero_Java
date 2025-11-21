@@ -9,7 +9,7 @@ public abstract class Vehiculo {
     private String modelo;
     private LocalDateTime horaIngreso;
     private TipoVehiculo tipoVehiculo;
-    
+
     public Vehiculo(String placa, String modelo, LocalDateTime horaIngreso, TipoVehiculo tipoVehiculo) {
         this.placa = placa;
         this.modelo = modelo;
@@ -31,6 +31,10 @@ public abstract class Vehiculo {
 
     public TipoVehiculo getTipoVehiculo() {
         return tipoVehiculo;
+    }
+
+    public void registrarIngreso() {
+        horaIngreso = LocalDateTime.now();
     }
     
 }
