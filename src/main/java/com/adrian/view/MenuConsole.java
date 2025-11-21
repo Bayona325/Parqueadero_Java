@@ -6,16 +6,19 @@ import java.util.Scanner;
 import com.adrian.model.Carro;
 import com.adrian.repository.ParqueaderoDatos;
 import com.adrian.service.GestorIngreso;
+import com.adrian.service.GestorSalida;
 
 public class MenuConsole {
     Scanner scan;
     GestorIngreso gIngreso;
+    GestorSalida gSalida;
     ParqueaderoDatos pDatos;
 
     public MenuConsole() {
         scan = new Scanner(System.in);
         gIngreso = new GestorIngreso();
         pDatos = new ParqueaderoDatos();
+        gSalida = new GestorSalida(gIngreso);
     }
 
     public void iniciar() {
@@ -76,7 +79,27 @@ public class MenuConsole {
     }
 
     private void opcionRegistrarSalida() {
+        System.out.println("--- NUEVA SALIDA ---");
+        String placa = leerTexto("Ingrese la Placa: ").toUpperCase();
 
+        if (gSalida.validarSalida(placa)) {
+            try {
+                var total = gSalida.calcularCosto(pDatos.buscar(placa));
+                int pago = leerEntero("El vehiculo o paga: "+total+"\n1.\tSI\n0.\tNO");
+                if (pago < 1) {
+                    System.out.println("Error: al procesar el pago del vehiculo con palcas: "+ placa);
+                    return;
+                }
+
+                //PAAGOOOOOO
+                gSalida.procesarSalida(placa);
+                System.out.println("Gracias por utilizarnos como ella uso el sistema.\nVehiculo con placas: "+placa+"puto");
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }            
+        } else {
+            System.out.println("Error: la placa "+ placa +" NO esta dentro del Psarqueadero.");
+        }
     }
 
     // Utilidades
