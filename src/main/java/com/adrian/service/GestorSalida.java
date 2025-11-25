@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import com.adrian.model.Vehiculo;
 
 public class GestorSalida {
-    
+
     private IValidator vIValidator;
 
     public GestorSalida(IValidator vIValidator) {
@@ -18,14 +18,15 @@ public class GestorSalida {
         var hSalida = LocalDateTime.now();
 
         if (hSalida.isBefore(hIngreso)) {
-            throw new Exception("Error: La hora de salida es anterior a la hora de ingreso");
+            System.out.println("Hay un problema!");
+            throw new Exception("Error: La hora de salida es anterior a la de ingreso.");
         }
 
         Duration duracion = Duration.between(hIngreso, hSalida);
 
-        long minutos = duracion.toMinutes(); //Toda la duración en minutos 125 minutos
+        long minutos = duracion.toMinutes(); // Toda la duracion en minutos 125 minutos
 
-        long horasACobrar = (long)Math.ceil(minutos / 60.0); // 125 /60 = 2,x
+        long horasACobrar = (long) Math.ceil(minutos / 60.0); // 125 /60 = 2 -> 3
 
         if (horasACobrar == 0) {
             horasACobrar = 1;
@@ -33,32 +34,36 @@ public class GestorSalida {
 
         double totalAPagar = vehiculo.getTipoVehiculo().getTarifaPorTiempo() * horasACobrar;
 
-        mostarRecibo(vehiculo, duracion, horasACobrar, vehiculo.getTipoVehiculo().getTarifaPorTiempo() , totalAPagar);
+        mostrarRecibo(vehiculo, duracion, horasACobrar, vehiculo.getTipoVehiculo().getTarifaPorTiempo(), totalAPagar);
 
         return totalAPagar;
     }
 
-    private void mostarRecibo(Vehiculo vehiculo, Duration duration, long horasACobrar, double tarifaHora, double totalPagar) {
+    private void mostrarRecibo(Vehiculo vehiculo, Duration duracion, long horasACobrar,
+            double tarifaHora, double totalPagar) {
         System.out.println("--- RESUMEN DE SALIDA ---");
-        System.out.println("Vehiculo: "+ vehiculo.getPlaca() +"");
-        System.out.println("Tiempo total: " + formatDuration(duration));
+        System.out.println("Vehículo: " + vehiculo.getPlaca() + " (" + vehiculo.getTipoVehiculo() + ")");
+        System.out.println("Tiempo total: " + formatDuration(duracion));
         System.out.println("Horas cobradas: " + horasACobrar);
         System.out.println("Tarifa x Hora: $" + tarifaHora);
         System.out.println("Total a Pagar: $" + totalPagar);
         System.out.println("-------------------------");
     }
 
+    
+
     private String formatDuration(Duration duration) {
         long hours = duration.toHours();
         long minutes = duration.toMinutesPart();
-        return hours + " hrs " + minutes + " min";
+        return hours + " hrs, " + minutes + " min";
     }
 
     public void procesarSalida(String placa) {
-        //Tendria salir del parqueadero -> GestorIngreso -> eliminarlo
+        System.out.println("Procesando Salida\nPorque Saliendo es Saliendo");
+        vIValidator.realizarSalida(placa);
     }
 
     public boolean validarSalida(String placa) {
-        return vIValidator.existePlaca(placa);
+        return vIValidator.exitePlaca(placa);
     }
 }

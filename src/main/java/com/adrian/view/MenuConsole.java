@@ -1,9 +1,11 @@
 package com.adrian.view;
 
-import java.time.LocalDateTime;
 import java.util.Scanner;
 
+import com.adrian.enums.TipoVehiculo;
+import com.adrian.factory.VehiculoFactory;
 import com.adrian.model.Carro;
+import com.adrian.model.Vehiculo;
 import com.adrian.repository.ParqueaderoDatos;
 import com.adrian.service.GestorIngreso;
 import com.adrian.service.GestorSalida;
@@ -17,7 +19,7 @@ public class MenuConsole {
     public MenuConsole() {
         scan = new Scanner(System.in);
         gIngreso = new GestorIngreso();
-        pDatos = new ParqueaderoDatos();
+        pDatos = ParqueaderoDatos.getInstance();
         gSalida = new GestorSalida(gIngreso);
     }
 
@@ -51,31 +53,59 @@ public class MenuConsole {
     }
 
     private void opcionConsultarVehiculo() {
-        
+
     }
 
     private void opcionIngresarVehiculo() {
         System.out.println("--- NUEVO INGRESO ---");
-        String placa = leerTexto("Ingrese la Placa: ");
+        String placa = leerTexto("Ingrese la Placa: ").toUpperCase();
 
-        if(gIngreso.registrarIngreso(placa)) {
-            //Validar si existe en el sistema
-            if(pDatos.existePlaca(placa)){
+        if (gIngreso.registrarIngreso(placa)) {
+            // Validar si existe en el sistema
+            if (ParqueaderoDatos.getInstance().existePlaca(placa)) {
                 pDatos.registrarIngreso(placa);
                 System.out.println("Vehículo registrado exitosamente.");
             }
             // NO -> Registro
             else {
-                Carro carrito = new Carro(placa, "x", LocalDateTime.now());
-                pDatos.guardar(carrito);
+                var modelo = leerTexto("Ingrese el modelo del Vehiculo con placa: " + placa);
+                var tipo = mostrarCategorias();
+                try {
+                    Vehiculo vehiculo = VehiculoFactory.crearVehiculo(tipo, placa, modelo);
+                    if (vehiculo instanceof Carro) {
+                        var carro = (Carro) vehiculo;
+                        var carro2 = carro.clone();
 
-                System.out.println("Vehículo registrado exitosamente.");
+                        System.out.println(carro.getHoraIngreso().toString());
+                        System.out.println(((Carro) carro2).getHoraIngreso().toString());
+                    }
+                    // Carro carrito = new Carro(placa, modelo, LocalDateTime.now());
+                    // pDatos == ParqueaderoDatos.getInstance()
+                    ParqueaderoDatos.getInstance().guardar(vehiculo);
+
+                    System.out.println("Vehículo registrado exitosamente.");
+                } catch (CloneNotSupportedException e) {
+                    System.out.println(e.getMessage());
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                }
+
             }
-            
+
         } else {
-            System.out.println("Error: La placa "+ placa + " ya esta dentro del Parqueadero.");
+            System.out.println("Error: La placa " + placa + " ya esta dentro del Parqueadero.");
         }
 
+    }
+
+    private int mostrarCategorias() {
+        System.out.println("------ CATEGORIAS ------");
+        TipoVehiculo.valueOf("MOTO"); // TipoVehiculo.MOTO
+        var tipos = TipoVehiculo.values();
+        for (int i = 0; i < tipos.length; i++) {
+            System.out.println("\t" + (i + 1) + ". " + tipos[i].name());
+        }
+        return leerEntero("Seleccione el tipo de Vehiculo: ");
     }
 
     private void opcionRegistrarSalida() {
@@ -85,21 +115,24 @@ public class MenuConsole {
         if (gSalida.validarSalida(placa)) {
             try {
                 var total = gSalida.calcularCosto(pDatos.buscar(placa));
-                int pago = leerEntero("El vehiculo o paga: "+total+"\n1.\tSI\n0.\tNO");
+                int pago = leerEntero("El vehiculo o paga: $ " + total + "\n1.\tSI\n0.\tNO");
                 if (pago < 1) {
-                    System.out.println("Error: al procesar el pago del vehiculo con palcas: "+ placa);
+                    System.out.println("Error: al procesar el pago del vehiculo con placas: " + placa);
                     return;
                 }
 
-                //PAAGOOOOOO
+                /// PAAGOOOOOOOOO
                 gSalida.procesarSalida(placa);
-                System.out.println("Gracias por utilizarnos como ella uso el sistema.\nVehiculo con placas: "+placa+"puto");
+                System.out.println("Gracias por utilizarnos como ella uso el sistema.\nVehiculo con placas:"
+                        + placa + " Saliendoooooooo.");
+
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-            }            
+            }
         } else {
-            System.out.println("Error: la placa "+ placa +" NO esta dentro del Psarqueadero.");
+            System.out.println("Error: La placa " + placa + " NO esta dentro del Parqueadero.");
         }
+
     }
 
     // Utilidades
